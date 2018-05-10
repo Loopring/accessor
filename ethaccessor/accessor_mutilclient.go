@@ -20,10 +20,10 @@ package ethaccessor
 
 import (
 	"errors"
+	"github.com/Loopring/relay-lib/cache"
 	"github.com/Loopring/relay-lib/eth/abi"
 	"github.com/Loopring/relay-lib/log"
 	"github.com/Loopring/relay-lib/types"
-	"github.com/Loopring/relay/cache"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"math/big"

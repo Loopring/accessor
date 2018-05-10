@@ -19,6 +19,7 @@
 package ethaccessor
 
 import (
+	ethtyp "github.com/Loopring/relay-lib/eth/types"
 	"github.com/Loopring/relay-lib/log"
 	"github.com/Loopring/relay-lib/types"
 	"math/big"
@@ -26,7 +27,7 @@ import (
 )
 
 type GasPriceEvaluator struct {
-	Blocks []*BlockWithTxAndReceipt
+	Blocks []*ethtyp.BlockWithTxAndReceipt
 
 	gasPrice *big.Int
 	stopChan chan bool
@@ -62,7 +63,7 @@ func (e *GasPriceEvaluator) start() {
 				default:
 					blockInterface, err := iterator.Next()
 					if nil == err {
-						blockWithTxAndReceipt := blockInterface.(*BlockWithTxAndReceipt)
+						blockWithTxAndReceipt := blockInterface.(*ethtyp.BlockWithTxAndReceipt)
 						log.Debugf("gasPriceEvaluator, blockNumber:%s, gasPrice:%s", blockWithTxAndReceipt.Number.BigInt().String(), e.gasPrice.String())
 						e.Blocks = append(e.Blocks, blockWithTxAndReceipt)
 						if len(e.Blocks) > 30 {
