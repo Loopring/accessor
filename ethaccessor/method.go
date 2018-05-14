@@ -333,7 +333,7 @@ func (ethAccessor *ethNodeAccessor) SignAndSendTransaction(result interface{}, s
 	if txData, err := rlp.EncodeToBytes(tx); nil != err {
 		return err
 	} else {
-		log.Debugf("txhash:%s, nonce:%d, value:%s, gas:%s, gasPrice:%s", tx.Hash().Hex(), tx.Nonce(), tx.Value().String(), tx.Gas().String(), tx.GasPrice().String())
+		log.Debugf("txhash:%s, nonce:%d, value:%s, gas:%d, gasPrice:%s", tx.Hash().Hex(), tx.Nonce(), tx.Value().String(), tx.Gas(), tx.GasPrice().String())
 		err = ethAccessor.RetryCall("latest", 2, result, "eth_sendRawTransaction", common.ToHex(txData))
 		if err != nil {
 			log.Errorf("accessor, Sign and send transaction error:%s", err.Error())
@@ -369,7 +369,7 @@ func (accessor *ethNodeAccessor) ContractSendTransactionByData(routeParam string
 	transaction := ethTypes.NewTransaction(nonce.Uint64(),
 		common.HexToAddress(to.Hex()),
 		value,
-		gas,
+		gas.Uint64(),
 		gasPrice,
 		callData)
 	if err := accessor.SignAndSendTransaction(&txHash, sender, transaction); nil != err {
@@ -379,7 +379,7 @@ func (accessor *ethNodeAccessor) ContractSendTransactionByData(routeParam string
 		transaction = ethTypes.NewTransaction(nonce.Uint64(),
 			common.HexToAddress(to.Hex()),
 			value,
-			gas,
+			gas.Uint64(),
 			gasPrice,
 			callData)
 		if err := accessor.SignAndSendTransaction(&txHash, sender, transaction); nil != err {
