@@ -25,7 +25,6 @@ import (
 	ethtyp "github.com/Loopring/relay-lib/eth/types"
 	"github.com/Loopring/relay-lib/log"
 	"github.com/Loopring/relay-lib/types"
-	"github.com/Loopring/relay/config"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"math/big"
@@ -258,7 +257,7 @@ func DelegateAbi() *abi.ABI {
 //	return accessor.NameRegistryAbi
 //}
 
-func Initialize(accessorOptions config.AccessorOptions, commonOptions config.CommonOptions, wethAddress common.Address) error {
+func Initialize(accessorOptions AccessorOptions, protocolOptions LoopringProtocolOptions, wethAddress common.Address) error {
 	var err error
 	accessor = &ethNodeAccessor{}
 	accessor.mtx = sync.RWMutex{}
@@ -273,11 +272,19 @@ func Initialize(accessorOptions config.AccessorOptions, commonOptions config.Com
 		return err
 	}
 
-	if accessor.Erc20Abi, err = abi.New(commonOptions.Erc20Abi); nil != err {
+	if "" == protocolOptions.Erc20Abi {
+		protocolOptions.Erc20Abi = DefaultErc20AbiStr
+	}
+
+	if accessor.Erc20Abi, err = abi.New(protocolOptions.Erc20Abi); nil != err {
 		return err
 	}
 
-	if accessor.WethAbi, err = abi.New(commonOptions.WethAbi); nil != err {
+	if "" == protocolOptions.WethAbi {
+		protocolOptions.WethAbi = DefaultWethAbiStr
+	}
+
+	if accessor.WethAbi, err = abi.New(protocolOptions.WethAbi); nil != err {
 		return err
 	}
 	accessor.WethAddress = wethAddress
@@ -285,19 +292,28 @@ func Initialize(accessorOptions config.AccessorOptions, commonOptions config.Com
 	accessor.ProtocolAddresses = make(map[common.Address]*ProtocolAddress)
 	accessor.DelegateAddresses = make(map[common.Address]bool)
 
-	if protocolImplAbi, err := abi.New(commonOptions.ProtocolImpl.ImplAbi); nil != err {
+	if "" == protocolOptions.ProtocolImpl.ImplAbi {
+		protocolOptions.ProtocolImpl.ImplAbi = DefaultProtoclImplAbiStr
+	}
+	if protocolImplAbi, err := abi.New(protocolOptions.ProtocolImpl.ImplAbi); nil != err {
 		return err
 	} else {
 		accessor.ProtocolImplAbi = protocolImplAbi
 	}
 
-	if transferDelegateAbi, err := abi.New(commonOptions.ProtocolImpl.DelegateAbi); nil != err {
+	if "" == protocolOptions.ProtocolImpl.DelegateAbi {
+		protocolOptions.ProtocolImpl.DelegateAbi = DefaultDelegateAbiStr
+	}
+	if transferDelegateAbi, err := abi.New(protocolOptions.ProtocolImpl.DelegateAbi); nil != err {
 		return err
 	} else {
 		accessor.DelegateAbi = transferDelegateAbi
 	}
 
-	if tokenRegistryAbi, err := abi.New(commonOptions.ProtocolImpl.TokenRegistryAbi); nil != err {
+	if "" == protocolOptions.ProtocolImpl.TokenRegistryAbi {
+		protocolOptions.ProtocolImpl.TokenRegistryAbi = DefaultTokenRegistryAbiStr
+	}
+	if tokenRegistryAbi, err := abi.New(protocolOptions.ProtocolImpl.TokenRegistryAbi); nil != err {
 		return err
 	} else {
 		accessor.TokenRegistryAbi = tokenRegistryAbi
@@ -309,7 +325,7 @@ func Initialize(accessorOptions config.AccessorOptions, commonOptions config.Com
 	//	accessor.NameRegistryAbi = nameRegistryAbi
 	//}
 
-	for version, address := range commonOptions.ProtocolImpl.Address {
+	for version, address := range protocolOptions.ProtocolImpl.Address {
 		impl := &ProtocolAddress{Version: version, ContractAddress: common.HexToAddress(address)}
 		callMethod := accessor.ContractCallMethod(accessor.ProtocolImplAbi, impl.ContractAddress)
 		var addr string
